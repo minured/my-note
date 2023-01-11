@@ -58,7 +58,7 @@
    1. https://github.com/trojan-gfw/trojan/tree/dev
    2. GO 版本 https://github.com/p4gefau1t/trojan-go/tree/master
 
-### vmess
+### vmess,vmessAEAD
 
 0. v2ray 自创 vmess 协议, 比 trojan 出现时间更早
 1. vmess 利用用户 id+时间戳计算出一个 hash 值,进行数据包合法校验,所以需要跟服务器时间一样(一段范围内)
@@ -70,9 +70,26 @@
    2. 加上 AEAD 加密后,v2ray 就可以知道数据包被修改
    3. 旧版 md5 加密与新版 AEAD 方式不兼容,新版 vmessAEAD 默认额外 id 为 0,默认使用 AEAD
       1. 2022.1.1 彻底淘汰了旧版 md5 认证
-3. 主流的 vmess 方式: `vmess + tcp/ws + tls + nginx(web)`
-   1. nginx 处理前台流量,防止主动探测,理论上nginx处理前台流量会比较安全, trojan伪装网站是由trojan处理前台流量(当然也可以前面加一层nginx)
+3. 主流的 vmess 方式: `vmess + ws + tls + nginx(web)`
+   1. nginx 处理前台流量,防止主动探测,理论上 nginx 处理前台流量会比较安全, trojan 伪装网站是由 trojan 处理前台流量(当然也可以前面加一层 nginx)
    2. nginx 通过路径(location),来把 vmess 流量转发给 v2ray 服务
+
+### vless,没有自带加密,配合 tls 使用
+
+1. RPRX 开发了 vless 和 xtls, 从 v2ray 分家, 创立 xray
+   1. https://github.com/v2ray/v2ray-core/issues/2636
+   2. https://github.com/v2ray/v2ray-core/issues/2789
+   3. https://github.com/RPRX/v2ray-vless/releases/tag/xtls
+2. xtls 和 tls
+   1. rprx: “其实 XTLS 就是无缝拼接了两条货真价实的 TLS，因此绝大多数流量无需二次加解密了”
+   2. tls 对整个数据包加密(此时数据内容本身已被加密过了 https 访问时, tls 已加密一次), xtls 只对 vless 头部数据加密(跳过了已加密部分)
+   3. xtls 使用 tls1.3, 原加密可能使用 tls1.2 或者 tls1.3, 可能出现了不同版本拼接, 最终伪装成一个tls1.3的数据包
+   4. 混接tls1.3和tls1.2具有某些特征,存在被gfw探测的问题
+      1. https://github.com/XTLS/Go/issues/16
+3. 近期封锁 https://github.com/XTLS/Xray-core/issues/1253
+4. vision 
+   1. https://github.com/XTLS/Xray-core/pull/1235 
+   2. https://github.com/XTLS/Xray-core/discussions/1295
 
 ### 协议常识
 
